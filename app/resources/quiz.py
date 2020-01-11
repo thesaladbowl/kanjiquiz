@@ -20,11 +20,11 @@ class QuizCreateAPI(Resource):
             "quiz_name", type=str, required=True, help="This field cannot be blank."
         )
         _quiz_parser.add_argument(
-            "class", type=str, required=True, help="This field cannot be blank."
+            "class_name", type=str, required=True, help="This field cannot be blank."
         )
 
         data = _quiz_parser.parse_args()
-        _class = Lesson.find_by_id(data['class'])
+        _class = Lesson.find_by_name(data['class_name'])
         student_list = [student for student in _class.students]
 
         try:
@@ -40,9 +40,9 @@ class QuizCreateAPI(Resource):
 
 class QuizDeleteAPI(Resource): # Deletes ALL quiz entries, not a single one
     @jwt_required
-    def delete(self, quiz_name):
+    def delete(self, quiz_id):
         claims = get_jwt_claims()
-        quiz_list = Quiz.query.filter_by(quiz_name=quiz_name)
+        quiz_list = Quiz.query.filter_by(quiz_id=quiz_id)
         if quiz_list and claims['authorized']:
             for quiz in quiz_list:
                 quiz.delete_from_db()
@@ -60,17 +60,22 @@ class QuizReadUpdateAPI(Resource): # Edits a single quiz, by ID. Can also retrei
         _quiz_parser.add_argument(
             "sentence", type=str, required=True, help="This field cannot be blank."
         )
+        _quiz_parser.add_argument(
+            "corrected_sentence", type=str, required=False, help="This field cannot be blank."
+        )
         data = _quiz_parser.parse_args()
         quiz = Quiz.query.filter_by(quiz_id=quiz_id).first()
         if quiz:
             quiz.sentence = data['sentence']
+            quiz.corrected_sentence = data['corrected_sentence']
             quiz.save_to_db()
             return quiz.json(), 201
         return {'message': 'could not update quiz'}, 500
 
 
 """
+
  To do:
- 1. ReadUpdateApi endpoint needs to be modified to read and edit a students quiz ie filter by quiz id AND student id
- 
+ 1. ReadUpdateApi endpoint needs to be modified to read and edit a students quiz ie filter by quiz id AND student id 
+
 """

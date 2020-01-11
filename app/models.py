@@ -44,6 +44,7 @@ class User(db.Model):
         return "<User: {}>".format(self.username)
 
 class Lesson(db.Model):
+
     class_id = db.Column(db.Integer, primary_key=True)
     class_name = db.Column(db.String(50))
     students = db.relationship('Student', backref='class_name', lazy=True)
@@ -51,6 +52,10 @@ class Lesson(db.Model):
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(class_id=_id).first()
+
+    @classmethod 
+    def find_by_name(cls, name):
+        return cls.query.filter_by(class_name=name).first()
 
     def save_to_db(self):
         db.session.add(self)
@@ -74,7 +79,7 @@ class Student(User):
     __tablename__ = "students"
 
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    lesson = db.Column(db.Integer, db.ForeignKey('lesson.class_id'))
+    lesson = db.Column(db.String, db.ForeignKey('lesson.class_name'))
     quizes = db.relationship('Quiz', backref='username', lazy=True)
 
     __mapper_args__ = {
@@ -92,6 +97,7 @@ class Teacher(User):
     __tablename__ = "teachers"
 
     teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    class_name = db.Column(db.String(10), db.ForeignKey('lesson.class_name'))
 
     __mapper_args__ = {
         'polymorphic_identity':'teachers',
@@ -102,6 +108,7 @@ class Teacher(User):
             "first_name": self.first_name,
             "id": self.student_id,
             "is_teacher": self.is_teacher,
+            "class_id": self.class_id
         }
 
 class Quiz(db.Model):
@@ -111,6 +118,7 @@ class Quiz(db.Model):
     quiz_name = db.Column(db.String(100))
     kanji = db.Column(db.String(50))
     sentence = db.Column(db.String(100))
+    corrected_sentence = db.Column(db.String(100))
     student = db.Column(db.Integer, db.ForeignKey('students.student_id'))
 
     @classmethod
@@ -130,7 +138,13 @@ class Quiz(db.Model):
 
     def json(self):
         return {
+            "id": self.quiz_id,
             "quiz": self.quiz_name,
             "kanji": self.kanji,
             "sentence": self.sentence,
+            "corrected_sentence": self.corrected_sentence,
         }
+
+"""
+ 1. Add booleans for correct, incorrect, partial correct (Choice??)
+"""

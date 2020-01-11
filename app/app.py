@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from models import User
-from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister
+from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister, StudentRetrieveAPI
 from resources.quiz import QuizCreateAPI, QuizDeleteAPI, QuizReadUpdateAPI
 from resources.lesson import LessonCreateAPI
 
@@ -20,6 +21,7 @@ def create_tables():
 
 api = Api(app)
 jwt = JWTManager(app)
+cors = CORS(app, expose_headers='Authorization')
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
@@ -28,12 +30,13 @@ def add_claims_to_access_token(identity):
         return {'authorized': True}
     
 api.add_resource(StudentList, "/students")
+api.add_resource(StudentRetrieveAPI, "/students/<int:student_id>")
 api.add_resource(StudentRegister, "/students/register")
 api.add_resource(TeacherRegister, "/teachers/register")
 
 api.add_resource(QuizReadUpdateAPI, "/quiz/<int:quiz_id>")
 api.add_resource(QuizCreateAPI, "/quiz")
-api.add_resource(QuizDeleteAPI, "/quiz/delete/<string:quiz_name>")
+api.add_resource(QuizDeleteAPI, "/quiz/delete/<int:quiz_id>") 
 
 api.add_resource(LessonCreateAPI, "/lesson")
 

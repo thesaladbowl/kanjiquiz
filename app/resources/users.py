@@ -3,6 +3,10 @@ from flask_restful import reqparse, Resource
 from models import User, Student, Lesson, Teacher
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_claims, jwt_required
 
+class StudentRetrieveAPI(Resource):
+    def get(self, student_id):
+        return Student.find_by_id(student_id).json()
+
 class StudentList(Resource):
     def get(self):
         return [student.json() for student in Student.query.all()]
@@ -25,8 +29,11 @@ class StudentRegister(Resource):
         _user_parser.add_argument(
             "is_teacher", type=bool, required=True, help="This field cannot be blank."
         )
+        _user_parser.add_argument(
+            "class_id", type=str, required=True, help="This field cannot be blank."
+        )
         data = _user_parser.parse_args()
-        _class = Lesson.find_by_id(1)
+        _class = Lesson.find_by_name(data["class_id"]) # Need to add parser for ID and then pass this as the argument
 
         if User.find_by_username(data["username"]):
             return {'message': 'A user with that name already exists'}
@@ -40,6 +47,10 @@ class StudentRegister(Resource):
         student.save_to_db()
 
         return {"message": "Student Created!"}, 201
+
+class TeacherInfo(Resource):
+    def get(self):
+        pass 
 
 class TeacherRegister(Resource):
     def post(self):
@@ -59,12 +70,18 @@ class TeacherRegister(Resource):
         _user_parser.add_argument(
             "is_teacher", type=bool, required=True, help="This field cannot be blank."
         )
+        _user_parser.add_argument(
+            "class_name", type=str, required=True, help="This field cannot be blank."
+        )
         data = _user_parser.parse_args()
 
         if User.find_by_username(data["username"]):
             return {'message': 'A user with that name already exists'}
 
-        teacher = Teacher(username=data['username'], first_name=data['first_name'], last_name=data['last_name'], is_teacher=data['is_teacher'])
+        if not Lesson.find_by_name(data['class_name']):
+            return  {'message': 'There is no class with that name'}
+
+        teacher = Teacher(username=data['username'], first_name=data['first_name'], last_name=data['last_name'], is_teacher=data['is_teacher'], class_name=data['class_name'])
         teacher.set_password(data['password'])
         teacher.save_to_db()
 
@@ -81,17 +98,18 @@ class UserLogin(Resource):
         )
 
         data = _login_parser.parse_args()
-
         user = User.find_by_username(data['username'])
+        
         pw = data['password']
 
         if user and pw:
             if user.check_password(pw):
                 access_token = create_access_token(identity=user.id, fresh=True)
-                refresh_token = create_refresh_token(user.id)
+                refresh_token = create_refresh_token(user.id)    
                 return {
                     'access_token': access_token,
                     'refresh_token': refresh_token,
+                    'user': user.is_teacher
                 }, 200
             else:
                 return {'message': 'Password is not correct'}
@@ -103,7 +121,6 @@ class UserDelete(Resource):
     def delete(self, user_id):
         claims = get_jwt_claims()
         user = Student.find_by_id(user_id)
-        print(claims)
         if user and claims['authorized']:
             user.delete_from_db()
             return {'message': 'User deleted!'}, 200
