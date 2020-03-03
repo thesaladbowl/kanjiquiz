@@ -1,6 +1,21 @@
-from flask_restful import reqparse, Resource
+from flask_restful import reqparse, Resource, inputs
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from models import User, Student, Quiz, Lesson
+
+class QuizCorrectAPI(Resource):
+    def get(self, class_id):
+        lesson = Lesson.query.filter_by(class_name=class_id).first()
+        correct = 0
+        incorrect = 0
+
+        for student in lesson.students:
+            correct += student.correct_quizes()[0]
+            incorrect += student.correct_quizes()[1]
+        
+        total = correct + incorrect
+
+        quiz_tally = {"correct": correct, "incorrect": incorrect, "total": total}
+        return quiz_tally
 
 class QuizCreateAPI(Resource):
     def get(self):
@@ -63,11 +78,16 @@ class QuizReadUpdateAPI(Resource): # Edits a single quiz, by ID. Can also retrei
         _quiz_parser.add_argument(
             "corrected_sentence", type=str, required=False, help="This field cannot be blank."
         )
+        _quiz_parser.add_argument(
+            "question_correct", type=inputs.boolean, required=True, help="This field cannot be blank."
+        )
+
         data = _quiz_parser.parse_args()
         quiz = Quiz.query.filter_by(quiz_id=quiz_id).first()
         if quiz:
             quiz.sentence = data['sentence']
             quiz.corrected_sentence = data['corrected_sentence']
+            quiz.question_correct = data['question_correct']
             quiz.save_to_db()
             return quiz.json(), 201
         return {'message': 'could not update quiz'}, 500

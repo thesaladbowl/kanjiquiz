@@ -8,8 +8,9 @@ class StudentRetrieveAPI(Resource):
         return Student.find_by_id(student_id).json()
 
 class StudentList(Resource):
-    def get(self):
-        return [student.json() for student in Student.query.all()]
+    def get(self, class_id):
+        student_list = Student.query.filter_by(lesson=class_id)
+        return [student.json() for student in student_list]
 
 class StudentRegister(Resource):
     def post(self):
@@ -49,8 +50,8 @@ class StudentRegister(Resource):
         return {"message": "Student Created!"}, 201
 
 class TeacherInfo(Resource):
-    def get(self):
-        pass 
+    def get(self, teacher_id):
+        return Teacher.query.filter_by(teacher_id=teacher_id).first().json() 
 
 class TeacherRegister(Resource):
     def post(self):
@@ -101,18 +102,23 @@ class UserLogin(Resource):
         user = User.find_by_username(data['username'])
         
         pw = data['password']
+        class_id = None
 
         if user and pw:
             if user.check_password(pw):
                 access_token = create_access_token(identity=user.id, fresh=True)
-                refresh_token = create_refresh_token(user.id)    
+                refresh_token = create_refresh_token(user.id)
+                if user.is_teacher:
+                    class_id = user.class_name
+                    
                 return {
                     'access_token': access_token,
                     'refresh_token': refresh_token,
-                    'user': user.is_teacher
+                    'user': user.is_teacher,
+                    'class_id': class_id
                 }, 200
             else:
-                return {'message': 'Password is not correct'}
+                return {'message': 'Password is not correct'}, 400
         else:
             return {'message': 'Invalid Credentials'}, 400
 
@@ -126,10 +132,4 @@ class UserDelete(Resource):
             return {'message': 'User deleted!'}, 200
         
         return {'message': 'User not found'}, 404
-
-
-"""
- To do:
- 
-"""
 

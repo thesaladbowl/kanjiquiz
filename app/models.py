@@ -1,4 +1,5 @@
 from db import db
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
@@ -51,7 +52,7 @@ class Lesson(db.Model):
 
     @classmethod
     def find_by_id(cls, _id):
-        return cls.query.filter_by(class_id=_id).first()
+        return cls.query.filter_by(class_name=_id).first()
 
     @classmethod 
     def find_by_name(cls, name):
@@ -86,9 +87,23 @@ class Student(User):
         'polymorphic_identity':'students',
     }
 
+    def correct_quizes(self):
+        total_correct = 0
+        total_incorrect = 0
+
+        for quiz in self.quizes:
+            if quiz.question_correct:
+                total_correct += 1
+            else:
+                total_incorrect += 1
+
+        total = [total_correct, total_incorrect]
+        
+        return total
+
     def json(self):
         return {
-            "first_name": self.first_name,
+            "full_name": f"{self.first_name} {self.last_name}",
             "id": self.student_id,
             "quizes": [quiz.json() for quiz in self.quizes]
         }
@@ -106,9 +121,9 @@ class Teacher(User):
     def json(self):
         return {
             "first_name": self.first_name,
-            "id": self.student_id,
+            "id": self.teacher_id,
             "is_teacher": self.is_teacher,
-            "class_id": self.class_id
+            "class_id": self.class_name
         }
 
 class Quiz(db.Model):
@@ -119,12 +134,15 @@ class Quiz(db.Model):
     kanji = db.Column(db.String(50))
     sentence = db.Column(db.String(100))
     corrected_sentence = db.Column(db.String(100))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_submitted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    question_correct = db.Column(db.Boolean, default=False)
     student = db.Column(db.Integer, db.ForeignKey('students.student_id'))
 
     @classmethod
     def find_by_name(cls, name):
         return cls.query.filter_by(quiz_name=name).first()
-
+        
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -143,8 +161,7 @@ class Quiz(db.Model):
             "kanji": self.kanji,
             "sentence": self.sentence,
             "corrected_sentence": self.corrected_sentence,
+            "question_correct": self.question_correct,
+            "date_created": self.date_created.strftime("%B %d, %Y, %H:%M"),
+            "date_submitted": self.date_submitted.strftime("%B %d, %Y, %H:%M")
         }
-
-"""
- 1. Add booleans for correct, incorrect, partial correct (Choice??)
-"""
