@@ -138,6 +138,7 @@ class Quiz(db.Model):
     date_submitted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     question_correct = db.Column(db.Boolean, default=False)
     student = db.Column(db.Integer, db.ForeignKey('students.student_id'))
+    comments = db.relationship("Comment")
 
     @classmethod
     def find_by_name(cls, name):
@@ -165,3 +166,30 @@ class Quiz(db.Model):
             "date_created": self.date_created.strftime("%B %d, %Y, %H:%M"),
             "date_submitted": self.date_submitted.strftime("%B %d, %Y, %H:%M")
         }
+
+class Comment(db.Model):
+    __tablename__ = "quiz_comments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    quiz_comment_id = db.Column(db.Integer, db.ForeignKey('quiz_questions.quiz_id'))
+    author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    comment = db.Column(db.Text, nullable=True)
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def json(self):
+        return {
+            "comment": self.comment,
+            "author": self.author,
+            "id": self.id,
+        }
+
+    def __repr__(self):
+        return "<Comment: {}>".format(self.quiz_comment_id)

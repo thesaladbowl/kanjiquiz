@@ -8,40 +8,58 @@ export default new Vuex.Store({
   state: {
     status: '',
     token: localStorage.getItem('token') || "",
-    teacher: ''
+    refresh: '',
+    teacher: '',
+    class: '',
+    teacherHomeData: [],
   },
   mutations: {
     auth_request(state){
       state.status = 'loading'
     },
     auth_success(state, payload){
-      state.status = 'success'
+      state.status = 'success'  
       state.token = payload.token
+      state.refresh = payload.refresh
       state.teacher = payload.user
+      state.class = payload.classId
     },
     auth_error(state){
       state.status = 'error'
     },
     logout(state){
       state.status = '',
-      state.token = ''
+      state.token = '',
+      state.classId = ''
+    },
+    teacherHomeData(state, payload){
+      state.teacherHomeData = payload.studentData
+    },
+    REFRESH(state, refresh_token){
+      state.token = refresh_token
     }
   },
   actions: {
     login({commit}, user){
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         commit('auth_request')
         axios({url: 'http://127.0.0.1:5000/login', data: user, method: 'POST'})
         .then(response => {
-          const token = response.data.access_token
-          const user = response.data.user
-          localStorage.setItem('token', token)
-          // axios.defaults.headers.common['Authorization'] = token
-          commit('auth_success', {
-            token: token,
-            user: user
-          })
-          resolve(response)
+            const token = response.data.access_token
+            const refresh = response.data.refresh_token
+            const user = response.data.user
+            const classId = response.data.class_id
+            localStorage.setItem('token', token)
+            // axios.defaults.headers.common['Authorization'] = token
+            commit('auth_success', {
+              token,
+              user,
+              classId,
+              refresh
+            })
+            resolve(response)
+        }).catch(() => {
+          reject("Invalid username/password")
         })
       })
     },
@@ -49,16 +67,39 @@ export default new Vuex.Store({
       return new Promise((resolve) => {
         commit('logout')
         localStorage.removeItem('token')
-        // delete axios.defaults.headers.common['Authorization']
         resolve()
       })
+    },
+    teacherHomeData({commit}){
+      return new Promise((resolve) => {
+        axios({url: `http://127.0.0.1:5000/student_list/${this.getters.classId}`, method: 'GET'})
+        .then(response => {
+          commit('teacherHomeData', {
+            studentData: response.data
+          })
+          resolve()
+        })
+      })
+    },
+    refresh({commit}, refresh_token){
+      commit('REFRESH', refresh_token)
     }
   },
   getters: {
     isLoggedIn: state => !!state.token,
     authStatus: state => state.status,
     isTeacher: state => state.teacher,
-    token: state => state.token
+    token: state => state.token,
+    classId: state => state.class,
+    teacherHomeData: state => state.teacherHomeData,
+    totalQuizNumber: state => {
+      let totalNumber = 0;
+      state.teacherHomeData.forEach(e => {
+        totalNumber += e.quizes.length
+      })
+      return totalNumber
+    },
+    
   },
   modules: {}
 });

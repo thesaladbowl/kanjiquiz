@@ -19,7 +19,7 @@ class QuizCorrectAPI(Resource):
 
 class QuizCreateAPI(Resource):
     def get(self):
-        return [quiz.json() for quiz in Quiz.query.all()]
+        return [quiz.json() for quiz in Quiz.query.all().limit(10)]
 
     @jwt_required
     def post(self):

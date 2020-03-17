@@ -3,8 +3,9 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from models import User, Quiz
-from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister, StudentRetrieveAPI, TeacherInfo
+from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister, StudentRetrieveAPI, TeacherInfo, TokenRefresh
 from resources.quiz import QuizCreateAPI, QuizDeleteAPI, QuizReadUpdateAPI, QuizCorrectAPI
+from resources.comment import CommentCreateAPI, CommentRetreieveAPI
 from resources.lesson import LessonCreateAPI
 
 from db import db
@@ -25,7 +26,7 @@ def create_tables():
 
 api = Api(app)
 jwt = JWTManager(app)
-cors = CORS(app, expose_headers='Authorization')
+CORS(app)
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
@@ -43,9 +44,13 @@ api.add_resource(QuizReadUpdateAPI, "/quiz/<int:quiz_id>")
 api.add_resource(QuizCreateAPI, "/quiz")
 api.add_resource(QuizDeleteAPI, "/quiz/delete/<int:quiz_id>") 
 
+api.add_resource(CommentCreateAPI, "/comment/create")
+api.add_resource(CommentRetreieveAPI, "/comment/<int:quiz_id>")
+
 api.add_resource(LessonCreateAPI, "/lesson")
 
 api.add_resource(UserLogin, "/login")
+api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserDelete, "/user/delete/<int:user_id>")
 
 api.add_resource(QuizCorrectAPI, "/stats/<string:class_id>/qcorrect")

@@ -9,9 +9,14 @@ import Student from "./views/Student.vue"
 import QuizDetail from "./views/QuizDetail.vue"
 import QuizCreate from "./views/QuizCreate.vue"
 import Login from "./views/Login.vue"
+import Icon from 'vue-awesome/components/Icon'
+import 'vue-awesome/icons'
+
 
 Vue.use(VueRouter);
+Vue.component('v-icon', Icon)
 Vue.prototype.$http = Axios;
+
 
 const token = localStorage.getItem('token')
 if(token){
@@ -56,7 +61,7 @@ const router = new VueRouter({
       meta: {
         requiresAuth: true,
         isTeacher: true
-      }
+      },
     },
     {
       path: "/quiz-create",
