@@ -1,15 +1,25 @@
 <template>
     <div id="navbar">
-        <router-link :to="{ name: 'teacher-home'}" >
+        <router-link 
+        v-if="isTeacher"
+        :to="{ name: 'teacher-home'}" >
+            <h1 class="logo-header"><span class="logo-kanji">漢字</span> Quiz</h1>
+        </router-link>
+        <router-link 
+        v-else
+        :to="{ name: 'student-home'}" >
             <h1 class="logo-header"><span class="logo-kanji">漢字</span> Quiz</h1>
         </router-link>
         <div class="navbar-links">
              <router-link
+                v-if="isTeacher"
                 :to="{ name: 'quiz-create'}"
                 class="btn"
                 >Create Quiz
              </router-link>
-          <a href="#" class="btn">Edit Profile</a>
+          <span v-if="!isTeacher">
+            <img src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" class="avatar">
+          </span>
           <span class="logout" v-if="isLoggedIn">
             <a @click="logout">Logout</a>
           </span>
@@ -21,7 +31,7 @@
 export default {
     data(){
         return {
-            //
+            isTeacher: this.$store.state.teacher 
         }
     },
   computed: {
@@ -80,5 +90,13 @@ export default {
 #navbar .navbar-links .btn:hover {
     background: rgb(218, 31, 31);
     color: #fff;
+}
+
+#navbar .avatar {
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin: 0.5rem 1rem;
 }
 </style>

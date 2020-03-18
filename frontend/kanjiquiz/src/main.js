@@ -12,6 +12,8 @@ import Login from "./views/Login.vue"
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons'
 
+const lStore = store
+
 
 Vue.use(VueRouter);
 Vue.component('v-icon', Icon)
@@ -27,7 +29,7 @@ const router = new VueRouter({
   mode: 'history',
   routes: [
     {
-      path: "/",
+      path: "/teacher-home",
       name: "teacher-home",
       component: TeacherHome,
       meta: {
@@ -76,6 +78,21 @@ const router = new VueRouter({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/student/quiz/:student_id/:quiz_id',
+      name: "student-quiz",
+      component: QuizDetail,
+      // Need to route guard further: check if quiz.id matches user.id
+      // Change models to include a student id along with the quiz and have his included
+      beforeEnter: (to,from,next) => {
+        if(to.params.student_id !== lStore.getters.userId){
+          lStore.dispatch('logout')
+          next({name: 'login'})
+        } else {
+          next()
+        }
+      }
     }
   ]
 })
@@ -89,6 +106,9 @@ router.beforeEach((to, from, next) => {
        } 
        next('/login')
     } else next()
+    if(!store.getters.isLoggedIn){
+      next('/login')
+    }
   } else {
     next() 
   }

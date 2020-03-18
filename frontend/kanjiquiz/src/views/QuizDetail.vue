@@ -1,7 +1,7 @@
 <template>
   <div>
       <Navbar />
-      <div v-show="message">{{ message }}</div>
+
         <div id="quiz-question" class="container">
                 <div class="detail-flex card" v-for="quiz in quizDetail" :key="quiz.id">
                     <h1>{{quiz.quiz}}</h1>
@@ -18,15 +18,28 @@
                         v-model="correction" 
                         />
                     </form>
-                    <p class="correct-sentence" v-if="quiz.corrected_sentence != null"><strong>Corrected sentence:</strong> {{ quiz.corrected_sentence }}</p>
-                    <div class="button-container">
+                    <form @submit.prevent="addStudentSentence(); StudentSaveChanges()" class="student-sentence-form">
+                        <input type="text"
+                        placeholder="Write your sentence!"
+                        v-model="studentSentence"
+                        v-if="!isTeacher"
+                        />
+                    </form>
+                    <p class="correct-sentence" v-if="quiz.corrected_sentence"><strong>Corrected sentence:</strong> {{ quiz.corrected_sentence }}</p>
+                    <div class="button-container" v-if="isTeacher">
                         <button class="btn correction" @click="active = !active">Make Correction</button>
                         <button class="btn mark-correct" v-if="!quiz.question_correct" @click="quiz.question_correct = true">Mark Correct</button>
                         <button class="btn mark-incorrect" v-else @click="quiz.question_correct = false">Mark Incorrect</button>                        
                     </div>
-                    <form @submit.prevent="saveChanges">
+                    <form @submit.prevent="saveChanges" v-if="isTeacher">
                         <input class="btn" type="submit" value="Submit">
                     </form>
+          </div>  
+            <div class="message-wrapper">
+                <MessageSnack :success="success" :error="error">
+                  <template v-slot:success>{{ successMessage }}</template>
+                  <template v-slot:error>{{ errorMessage }}</template>
+              </MessageSnack> 
             </div>
             <div class="comment-wrapper">
                 <div class="comment-container card">
@@ -54,22 +67,28 @@
 <script>
 import axios from 'axios'
 import Navbar from '../components/Navbar.vue'
+import MessageSnack from '@/components/MessageSnack.vue'
 import apiservice, { fetchApiService } from '../../services/apiservice.js'
 
 export default {
     name: "quiz",
     components: {
-        Navbar
+        Navbar,
+        MessageSnack
     },
     data () {
         return {
             quizDetail: [],
             active: false,
             correction: "",
-            message: '',
-            test: '',
+            success: false,
+            error: false,
+            successMessage: '',
+            errorMessage: '',
+            isTeacher: this.$store.getters.isTeacher,
             comments: [],
             comment: '',
+            studentSentence: '',
             name: this.$route.params.name
         }
     },
@@ -98,10 +117,13 @@ export default {
             this.quizDetail[0].corrected_sentence = this.correction;
             this.active = false;
         },
+        addStudentSentence(){
+            this.quizDetail[0].sentence = this.studentSentence;
+        },
         addComment(){
             const data = {
                 'comment': this.comment,
-                'user_id': this.$route.params.user_id,
+                'user_id': this.$route.params.user_id ? this.$route.params.user_id : this.$route.params.student_id,
                 'quiz_id': this.$route.params.quiz_id
             }
 
@@ -111,8 +133,13 @@ export default {
                     this.comments.push(this.comment)
                     this.comment = ''
                     this.getComments()
+                    this.error = false
+                    this.success = true
+                    this.successMessage = "You added a comment!"
                 } else {
-                    console.log("error")
+                    this.success = false
+                    this.error = true
+                    this.errorMessage = "An error has occured"
                 }
             })
         },
@@ -132,12 +159,34 @@ export default {
                 body: JSON.stringify(data)
             }).then((response) => {
                 if(response.ok){
-                    this.message = 'Updated!'
+                    this.error = false
+                    this.success = true
+                    this.successMessage = "Updated!"
                 } else {
-                    this.message = 'Error updating'
+                    this.success = false
+                    this.error = true
+                    this.errorMessage = 'Error updating'
                 }
             })
         },
+        StudentSaveChanges(){
+            const data = {
+                'sentence': this.studentSentence,
+                'question_correct': this.quizDetail[0].question_correct,
+            }
+            fetchApiService(`http://127.0.0.1:5000/quiz/${this.$route.params.quiz_id}`, 'PUT', data)
+            .then(response => {
+                if(response.success){
+                    this.error = false
+                    this.success = true
+                    this.successMessage = "You added your sentence!"
+                } else {
+                    this.success = false
+                    this.error = true
+                    this.errorMessage = "Error Updating"
+                }
+            })
+        }
     },
     created(){
         this.getQuizDetail()
@@ -268,6 +317,14 @@ export default {
 #quiz-question .comment-wrapper {
     display:flex;
     justify-content: space-between;
+}
+
+#quiz-question .student-sentence-form {
+    margin: 0.5rem 1rem;
+}
+
+#quiz-question .student-sentence-form input[type=text] {
+    padding: 0.25rem 0.5rem;
 }
 
 </style>

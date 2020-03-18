@@ -11,6 +11,7 @@ export default new Vuex.Store({
     refresh: '',
     teacher: '',
     class: '',
+    userId: '',
     teacherHomeData: [],
   },
   mutations: {
@@ -23,6 +24,7 @@ export default new Vuex.Store({
       state.refresh = payload.refresh
       state.teacher = payload.user
       state.class = payload.classId
+      state.userId = payload.userId
     },
     auth_error(state){
       state.status = 'error'
@@ -49,9 +51,10 @@ export default new Vuex.Store({
             const refresh = response.data.refresh_token
             const user = response.data.user
             const classId = response.data.class_id
+            const userId = response.data.id
             localStorage.setItem('token', token)
-            // axios.defaults.headers.common['Authorization'] = token
             commit('auth_success', {
+              userId,
               token,
               user,
               classId,
@@ -89,6 +92,7 @@ export default new Vuex.Store({
     isLoggedIn: state => !!state.token,
     authStatus: state => state.status,
     isTeacher: state => state.teacher,
+    userId: state => state.userId,
     token: state => state.token,
     classId: state => state.class,
     teacherHomeData: state => state.teacherHomeData,

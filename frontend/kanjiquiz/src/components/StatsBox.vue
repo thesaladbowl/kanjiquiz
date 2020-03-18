@@ -46,6 +46,8 @@ export default {
 #total-quiz {
     display: flex;
     color: rgb(85, 85, 85);
+    /* color: #fff; */
+    /* background: rgb(95, 241, 81); */
     flex-direction: column;
     justify-content: center;
     align-items: center;

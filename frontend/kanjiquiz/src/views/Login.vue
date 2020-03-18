@@ -36,7 +36,7 @@ export default {
             this.$store.dispatch('login', {username, password})
             .then(response => {
                 if(response.data.user){
-                    this.$router.push('/')
+                    this.$router.push('/teacher-home')
                 } else {
                     this.$router.push('/student-home')
                 }
