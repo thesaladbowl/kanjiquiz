@@ -112,6 +112,7 @@ class UserLogin(Resource):
                     class_id = user.class_name
                     
                 return {
+                    'id': user.id,
                     'access_token': access_token,
                     'refresh_token': refresh_token,
                     'user': user.is_teacher,

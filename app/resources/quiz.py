@@ -79,7 +79,7 @@ class QuizReadUpdateAPI(Resource): # Edits a single quiz, by ID. Can also retrei
             "corrected_sentence", type=str, required=False, help="This field cannot be blank."
         )
         _quiz_parser.add_argument(
-            "question_correct", type=inputs.boolean, required=True, help="This field cannot be blank."
+            "question_correct", type=inputs.boolean, required=False, help="This field cannot be blank."
         )
 
         data = _quiz_parser.parse_args()
@@ -92,7 +92,9 @@ class QuizReadUpdateAPI(Resource): # Edits a single quiz, by ID. Can also retrei
             return quiz.json(), 201
         return {'message': 'could not update quiz'}, 500
 
-
+# class StudentQuizListAPI(Resource):
+#     def get(self, student_id):
+#         return [quiz.json() for quiz in Quiz.query.filter_by(student=student_id)]
 """
 
  To do:
