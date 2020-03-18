@@ -32,6 +32,7 @@ export default {
     color: white;
     font-weight: 900;
     box-shadow: 2px 2px 8px #888888;
+    margin-top: 1rem;
 }
 
 .error-message {
@@ -41,6 +42,7 @@ export default {
     color: white;
     font-weight: 900;
     box-shadow: 2px 2px 8px #888888;
+    margin-top: 1rem;
 }
 
 .message-container {
