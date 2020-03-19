@@ -2,6 +2,8 @@ from flask_restful import reqparse, Resource, inputs
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from models import User, Student, Quiz, Lesson
 
+from datetime import datetime
+
 class QuizCorrectAPI(Resource):
     def get(self, class_id):
         lesson = Lesson.query.filter_by(class_name=class_id).first()
@@ -81,23 +83,15 @@ class QuizReadUpdateAPI(Resource): # Edits a single quiz, by ID. Can also retrei
         _quiz_parser.add_argument(
             "question_correct", type=inputs.boolean, required=False, help="This field cannot be blank."
         )
-
+        
         data = _quiz_parser.parse_args()
         quiz = Quiz.query.filter_by(quiz_id=quiz_id).first()
         if quiz:
             quiz.sentence = data['sentence']
             quiz.corrected_sentence = data['corrected_sentence']
             quiz.question_correct = data['question_correct']
+            quiz.date_submitted = datetime.today()
             quiz.save_to_db()
             return quiz.json(), 201
         return {'message': 'could not update quiz'}, 500
 
-# class StudentQuizListAPI(Resource):
-#     def get(self, student_id):
-#         return [quiz.json() for quiz in Quiz.query.filter_by(student=student_id)]
-"""
-
- To do:
- 1. ReadUpdateApi endpoint needs to be modified to read and edit a students quiz ie filter by quiz id AND student id 
-
-"""
