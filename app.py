@@ -16,6 +16,7 @@ from forms import LoginForm
 
 app = Flask(__name__)
 login = LoginManager(app)
+db.init_app(app)
 CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
@@ -104,5 +105,4 @@ def logout():
     return 'Logged Out!'
 
 if __name__ == "__main__":
-    db.init_app(app)
     app.run(port=5000, debug=True)
