@@ -2,7 +2,7 @@ from flask import Flask, redirect, url_for, render_template, request
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from models import User, Quiz, Lesson
+from models import User, Quiz, Lesson, Student
 from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister, StudentRetrieveAPI, TeacherInfo, TokenRefresh
 from resources.quiz import QuizCreateAPI, QuizDeleteAPI, QuizReadUpdateAPI, QuizCorrectAPI
 from resources.comment import CommentCreateAPI, CommentRetreieveAPI
@@ -14,9 +14,10 @@ from flask_admin.contrib.sqla import ModelView
 from flask_login import UserMixin, LoginManager, current_user, login_user, logout_user
 from forms import LoginForm
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder = "./dist/static",
+            template_folder = "./dist")
 login = LoginManager(app)
-db.init_app(app)
 CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
@@ -83,6 +84,7 @@ class MyAdminIndexView(AdminIndexView):
 admin = Admin(app, name="KanjiQuiz", index_view=MyAdminIndexView())
 admin.add_view(MyModelView(User, db.session))
 admin.add_view(MyModelView(Quiz, db.session))
+admin.add_view(MyModelView(Student, db.session))
 admin.add_view(MyModelView(Lesson, db.session))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -104,5 +106,10 @@ def logout():
     logout_user()
     return 'Logged Out!'
 
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+db.init_app(app)
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
