@@ -2,7 +2,7 @@ from flask import Flask, redirect, url_for, render_template, request
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from models import Quiz, Lesson, Student, Teacher
+from models import User, Quiz, Lesson, Student, Teacher
 from resources.users import StudentList, StudentRegister, UserLogin, UserDelete, TeacherRegister, StudentRetrieveAPI, TeacherInfo, TokenRefresh
 from resources.quiz import QuizCreateAPI, QuizDeleteAPI, QuizReadUpdateAPI, QuizCorrectAPI
 from resources.comment import CommentCreateAPI, CommentRetreieveAPI
@@ -85,7 +85,6 @@ admin = Admin(app, name="KanjiQuiz", index_view=MyAdminIndexView())
 admin.add_view(MyModelView(Quiz, db.session))
 admin.add_view(MyModelView(Student, db.session))
 admin.add_view(MyModelView(Teacher, db.session))
-
 admin.add_view(MyModelView(Lesson, db.session))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
