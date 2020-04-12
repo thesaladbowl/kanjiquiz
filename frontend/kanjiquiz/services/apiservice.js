@@ -2,8 +2,8 @@ import axios from 'axios'
 import store from '../src/store'
 
 const apiService = axios.create({
-    baseURL: 'https://kanjiquiz.herokuapp.com/',
-    // baseURL: 'http://127.0.0.1:5000/',
+    // baseURL: 'https://kanjiquiz.herokuapp.com/',
+    baseURL: 'http://127.0.0.1:5000/',
     headers: {
         Accept: 'application/json',
         'Content-type': 'application/json',
@@ -23,8 +23,8 @@ const fetchApiService = function(endpoint, method, data){
 
     }
 
-    const fullEndpoint = `https://kanjiquiz.herokuapp.com` + endpoint
-    // const fullEndpoint = `http://127.0.0.1:5000` + endpoint
+    // const fullEndpoint = `https://kanjiquiz.herokuapp.com` + endpoint
+    const fullEndpoint = `http://127.0.0.1:5000` + endpoint
 
     return fetch(fullEndpoint, config)
     .then(response => {

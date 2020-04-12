@@ -13,6 +13,7 @@ export default new Vuex.Store({
     class: '',
     userId: '',
     teacherHomeData: [],
+    loading: true,
   },
   mutations: {
     auth_request(state){
@@ -39,13 +40,20 @@ export default new Vuex.Store({
     },
     REFRESH(state, refresh_token){
       state.token = refresh_token
+    },
+    LOADING_ON(state){
+      state.loading = true
+    },
+    LOADING_OFF(state){
+      state.loading = false
     }
   },
   actions: {
     login({commit}, user){
       return new Promise((resolve, reject) => {
         commit('auth_request')
-        axios({url: 'https://kanjiquiz.herokuapp.com/login', data: user, method: 'POST'})
+        commit('LOADING_ON')
+        axios({url: 'http://127.0.0.1:5000/login', data: user, method: 'POST'})
         .then(response => {
             const token = response.data.access_token
             const refresh = response.data.refresh_token
@@ -61,7 +69,11 @@ export default new Vuex.Store({
               refresh
             })
             resolve(response)
-        }).catch(() => {
+        })
+        .then(() => {
+          commit('LOADING_OFF')
+        })
+        .catch(() => {
           reject("Invalid username/password")
         })
       })
@@ -75,7 +87,7 @@ export default new Vuex.Store({
     },
     teacherHomeData({commit}){
       return new Promise((resolve) => {
-        axios({url: `https://kanjiquiz.herokuapp.com/student_list/${this.getters.classId}`, method: 'GET'})
+        axios({url: `http://127.0.0.1:5000/student_list/${this.getters.classId}`, method: 'GET'})
         .then(response => {
           commit('teacherHomeData', {
             studentData: response.data
@@ -90,6 +102,7 @@ export default new Vuex.Store({
   },
   getters: {
     isLoggedIn: state => !!state.token,
+    loadingStatus: state => state.loading,
     authStatus: state => state.status,
     isTeacher: state => state.teacher,
     userId: state => state.userId,

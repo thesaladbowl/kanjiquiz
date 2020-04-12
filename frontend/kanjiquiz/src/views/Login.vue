@@ -12,8 +12,9 @@
                     <label>Password</label>
                     <input type="password" required v-model="password">
                 </div>
-                <input type="submit" class="btn" value="Login">
+                <input type="submit" class="btn" :class="{ disabled : loading}" value="Login">
                 <span class="error">{{ error }}</span>
+                <span v-if="$store.getters.loadingStatus" :class="{ spinner : loading}"></span>
             </form>
         </div>
       </div>
@@ -26,6 +27,7 @@ export default {
             username: "",
             password: "",
             error: "",
+            loading: false,
         }
     },
     methods: {
@@ -33,6 +35,7 @@ export default {
             let username = this.username;
             let password = this.password;
 
+            this.loading = true;
             this.$store.dispatch('login', {username, password})
             .then(response => {
                 if(response.data.user){
@@ -42,6 +45,7 @@ export default {
                 }
             })
             .catch(err => {
+                this.loading = false
                 this.error = err
             })
         }
@@ -116,6 +120,44 @@ export default {
 #login .btn {
     margin-top: 25px;
     padding: 0.75rem 1rem;
+}
+
+.disabled { 
+  background: #999;
+  color: rgb(224, 223, 223);
+  cursor: not-allowed;
+}
+
+.spinner {
+    height: 50px;
+    opacity: 1;
+    position: relative;
+    transition: opacity linear 0.1s;  
+    display: block;  
+}
+
+.spinner:before {
+        animation: 2s linear infinite spinner;
+        border: solid 3px #eee;
+        border-bottom-color: #EF6565;
+        border-radius: 50%;
+        content: "";
+        height: 40px;
+        left: 40%;
+        opacity: inherit;
+        position: absolute;
+        top: 40%;
+        width: 40px;
+        will-change: transform;
+}
+
+@keyframes spinner {
+    0% {
+        transform:  rotate(0deg);
+    }
+    100% {
+         transform: rotate(360deg);
+    }
 }
 
 
