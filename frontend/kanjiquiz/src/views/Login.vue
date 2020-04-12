@@ -6,11 +6,11 @@
                 <h2 class="l-heading">Sign in</h2>
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" required v-model="username" value="teacher2">
+                    <input type="text" required v-model="username">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" required v-model="password" value="password">
+                    <input type="password" required v-model="password">
                 </div>
                 <input type="submit" class="btn" :class="{ disabled : loading}" value="Login">
                 <span class="error">{{ error }}</span>
@@ -24,8 +24,8 @@
 export default {
     data(){
         return {
-            username: "",
-            password: "",
+            username: "teacher2",
+            password: "password",
             error: "",
             loading: false,
         }
