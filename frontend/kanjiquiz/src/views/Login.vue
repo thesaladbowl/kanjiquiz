@@ -6,11 +6,11 @@
                 <h2 class="l-heading">Sign in</h2>
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" required v-model="username">
+                    <input type="text" required v-model="username" value="teacher2">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" required v-model="password">
+                    <input type="password" required v-model="password" value="password">
                 </div>
                 <input type="submit" class="btn" :class="{ disabled : loading}" value="Login">
                 <span class="error">{{ error }}</span>
