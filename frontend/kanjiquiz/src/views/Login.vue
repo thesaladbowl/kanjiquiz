@@ -80,6 +80,11 @@ export default {
     outline: 0 none;
 }
 
+#login input:active {
+    box-shadow: none;
+    border-color: none;
+}
+
 #login label {
     display: block;
     text-align: center;
